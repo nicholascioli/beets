@@ -1,0 +1,110 @@
+.noselect, span, md-tab-item {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+/* 
+ * Album rules
+ */
+.album {
+	width: 15em;
+}
+
+/* 
+ * Track rules
+ */
+.track {
+	cursor: pointer;
+}
+.track:hover {
+	-moz-box-shadow: inset 0 0 100px 100px rgba(100, 100, 100, 0.3);
+    -webkit-box-shadow: inset 0 0 100px 100px rgba(100, 100, 100, 0.3);
+    box-shadow: inset 0 0 100px 100px rgba(100, 100, 100, 0.3);
+}
+.track[md-ink-ripple] {
+	position: relative;
+}
+
+.track-playing {
+	background-color: #E53935;
+}
+.track-playing span {
+	color: white;
+}
+
+.track-progress {
+	margin: 0 2em;
+}
+.track-progress md-progress-linear {
+	cursor: pointer;
+}
+
+/* 
+ * Playing section rules
+ */
+.now-playing {
+	height: 100%;
+}
+.now-playing img {
+	height: 100%;
+	width: auto;
+	margin-right: 0.5em;
+}
+.now-playing span {
+	color: black;
+}
+
+/* 
+ * Angular Material rules for precise styling
+ */
+.md-headline {
+    font-size: 1.2em;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.md-list-item-image {
+	width: 2em;
+	height: 2em;
+	margin: 0.5em 0.75em 0.5em 0;
+}
+
+.md-subhead {
+    font-size: 0.8em;
+    padding-top: 0 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+md-card-title {
+    padding: 0.6em !important;
+}
+
+md-card-title-text {
+    min-width: 0;
+}
+
+md-card[md-ink-ripple] {
+    position: relative;
+}
+
+md-tabs-wrapper {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	background-color: white !important;
+	z-index: 1000;
+	width: 100%;
+}
+
+md-tabs.md-dynamic-height md-tabs-content-wrapper {
+	margin-top: 3em !important;
+}

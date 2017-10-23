@@ -228,7 +228,8 @@ def item_file(item_id):
     response = flask.send_file(
         item_path,
         as_attachment=True,
-        attachment_filename=os.path.basename(util.py3_path(item.path)),
+        # Strip unicode characters from the filename header
+        attachment_filename=''.join([x for x in os.path.basename(util.py3_path(item.path)) if ord(x) < 128])
     )
     response.headers['Content-Length'] = os.path.getsize(item_path)
     return response
@@ -286,7 +287,14 @@ def album_query(queries):
 def album_art(album_id):
     album = g.lib.get_album(album_id)
     if album.artpath:
-        return flask.send_file(album.artpath)
+        # On Windows under Python 2, Flask wants a Unicode path. On Python 3, it
+        # *always* wants a Unicode path.
+        if os.name == 'nt':
+            item_path = util.syspath(album.artpath)
+        else:
+            item_path = util.py3_path(album.artpath)
+
+        return flask.send_file(item_path)
     else:
         return flask.abort(404)
 

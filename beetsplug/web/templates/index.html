@@ -1,98 +1,132 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html5>
+<html lang="en">
     <head>
-        <title>beets</title>
+		<title>Beets Web</title>
+		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}" />
 
-        <link rel="stylesheet"
-        href="{{ url_for('static', filename='beets.css') }}" type="text/css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css') }}"  media="screen,projection"/>
+		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/angular-material.min.css') }}"  media="screen,projection"/>
+		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/md-data-table.min.css') }}" media="screen,projection"/>
+        
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/beets-web.css') }}"  media="screen,projection"/>
 
-        <script src="{{ url_for('static', filename='jquery.js') }}"></script>
-        <script src="{{ url_for('static', filename='underscore.js') }}">
-        </script>
-        <script src="{{ url_for('static', filename='backbone.js') }}"></script>
-        <script src="{{ url_for('static', filename='beets.js') }}"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head>
-    <body>
-        <div id="header">
-            <h1>beets</h1>
-            <div id="player">
-                <audio></audio>
+    <body ng-app="beets-web" ng-controller="controller" ng-cloak="">
+        <md-content class="md-padding" style="margin-bottom: 5em !important;">
+            <md-tabs md-dynamic-height md-border-bottom md-swipe-content>
+                <md-tab label="Album" id="albums">
+					<md-content>
+						<div class='md-padding' layout="row" layout-wrap>
+							<!-- TODO: Click handler for this -->
+							<md-card class="album" md-ink-ripple="#DDDDDD" ng-repeat="album in data.albums | orderBy: 'album'">
+								<img ng-src="/album/[[album.id]]/art" class="md-card-image noselect" alt="image caption">
+								<md-card-title>
+									<md-card-title-text>
+										<span class="md-headline noselect" md-colors="{color: 'grey-900'}">[[album.album]]</span>
+										<span class="md-subhead noselect" md-colors="{color: 'grey-700'}">[[album.albumartist]]</span>
+									</md-card-title-text>
+								</md-card-title>
+							</md-card>
+						</div>
+					</md-content>
+				</md-tab>
+				<md-tab label="Artists">
+					<md-content>
+						<md-card>
+							<md-list>
+								<div ng-repeat="artist in data.artists | orderBy: artist">
+									<md-list-item>
+										<strong>[[artist]]</strong>
+									</md-list-item>
+									<!-- TODO: Click handler for this -->
+									<md-list-item ng-repeat="album in data.albums | filter:{albumartist: artist} | orderBy: 'album'" md-ink-ripple="#DDDDDD" ng-click="window.alert('Clicked on ', [[track]])">
+										<img alt="[[album.album]]" ng-src="/album/[[album.id]]/art" class="md-list-item-image">
+										<p>[[album.album]]</p>
+									</md-list-item>
+									<md-divider ng-show="!$last"></md-divider>
+								</div>
+							</md-list>
+						</md-card>
+					</md-content>
+				</md-tab>
+				<md-tab label="Songs">
+						<md-content>
+							<md-card>
+								<md-table-container>
+									<table md-table>
+										<thead md-head md-order="query.order">
+												<tr md-row>
+													<th md-column md-order-by="title"><span>Title</span></th>
+													<th md-column md-numeric md-order-by="length"><i class="material-icons">access_time</i></th>
+													<th md-column md-order-by="artist"><span>Artist</span></th>
+													<th md-column md-order-by="album"><span>Album</span></th>
+												</tr>
+										</thead>
+										<tbody md-body>
+											<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: query.order" ng-click="playAudio(track.id, $index);">
+												<td md-cell>
+													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" class="md-list-item-image">
+													<span>[[track.title]]</span>
+												</td>
+												<td md-cell><span>[[formatTime(track.length)]]</span></td>
+												<td md-cell><span>[[track.artist]]</span></td>
+												<td md-cell><span>[[track.album]]</span></td>
+											</tr>
+										</tbody>
+									</table>
+								</md-table-container>
+							</md-card>
+						</md-content>
+					</md-tab>
+            </md-tabs>
+		</md-content>
+		
+		<md-toolbar md-whiteframe="9" style="position: fixed; bottom: 0; background-color: #FFF !important;">
+			<div class="track-progress">
+				<md-progress-linear ng-click="scroll($event)" value="[[audio.progress]]" md-mode="determinate"></md-progress-linear>
+			</div>
 
-                <button class="disabled">&#9654;</button>
-                <button class="play">&#9654;</button>
-                <button class="pause" style="letter-spacing: 1px;">&#10073;&#10073;</button>
+			<div class="md-toolbar-tools" layout="row" layout-align="center center" style="margin: 10px 0px; width: 100%;">
+				<div flex="33" style="height: 100%;">
+					<div class="now-playing" ng-if="audio.queue.length > 0" layout="row">
+						<img ng-src="/album/[[audio.queue[audio.qIndex].album_id]]/art" />
+						<div layout="column">
+							<span class="md-title">[[audio.queue[audio.qIndex].title]]</span>
+							<span class="md-subhead">[[audio.queue[audio.qIndex].artist]] - [[audio.queue[audio.qIndex].album]]</span>
+						</div>
+					</div>
+				</div>
+				<div style="margin: 0 auto;">
+					<md-button class="md-icon-button md-mini md-primary"><i class="material-icons">loop</i></md-button>
+					<md-button class="md-fab md-mini md-primary" ng-click="skip(-1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == 0"><i class="material-icons">fast_rewind</i></md-button>
+					<md-button class="md-fab md-primary" ng-click="playPause()" ng-disabled="audio.queue.length == 0">
+						<i class="material-icons" ng-show="audio.isPlaying">pause</i>
+						<i class="material-icons" ng-show="!audio.isPlaying">play_arrow</i>
+					</md-button>
+					<md-button class="md-fab md-mini md-primary" ng-click="skip(1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == audio.queue.length - 1"><i class="material-icons">fast_forward</i></md-button>
+					<md-button class="md-icon-button md-mini md-primary"><i class="material-icons">shuffle</i></md-button>
+				</div>
+				<div flex="33">
 
-                <span class="times">
-                    <span class="currentTime">
-                    </span>
-                </span>
-            </div>
-        </div>
+				</div>
+			</div>
+		</md-toolbar>
 
-        <div id="entities">
-            <form id="queryForm">
-                <input type="search" id="query" placeholder="Query">
-            </form>
-            <ul id="results">
-            </ul>
-        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
 
-        <div id="main-detail">
-        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-filter.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-animate.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-aria.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-messages.min.js') }}"></script>
 
-        <div id="extra-detail">
-        </div>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-material.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/md-data-table.min.js') }}"></script>
 
-        <!-- Templates. -->
-        <script type="text/template" id="item-entry-template">
-            <%= title %>
-            <span class="playing">&#9654;</span>
-        </script>
-        <script type="text/template" id="item-main-detail-template">
-            <span class="artist"><%= artist %></span>
-            <span class="album">
-                <span class="albumtitle"><%= album %></span>
-                <span class="year">(<%= year %>)</span>
-            </span>
-            <span class="title"><%= title %></span>
-
-            <button class="play">&#9654;</button>
-
-            
-        </script>
-        <script type="text/template" id="item-extra-detail-template">
-            <dl>
-                <dt>Track</dt>
-                <dd><%= track %>/<%= tracktotal %></dd>
-                <% if (disc) { %>
-                    <dt>Disc</dt>
-                    <dd><%= disc %>/<%= disctotal %></dd>
-                <% } %>
-                <dt>Length</dt>
-                <dd><%= timeFormat(length) %></dd>
-                <dt>Format</dt>
-                <dd><%= format %></dd>
-                <dt>Bitrate</dt>
-                <dd><%= Math.round(bitrate/1000) %> kbps</dd>
-                <% if (mb_trackid) { %>
-                    <dt>MusicBrainz entry</dt>
-                    <dd>
-                        <a target="_blank" href="http://musicbrainz.org/recording/<%= mb_trackid %>">view</a>
-                    </dd>
-                <% } %>
-                <dt>File</dt>
-                <dd>
-                    <a target="_blank" class="download" href="item/<%= id %>/file">download</a>
-                </dd>
-                <% if (lyrics) { %>
-                    <dt>Lyrics</dt>
-                    <dd class="lyrics"><%= lyrics %></dd>
-                <% } %>
-                <% if (comments) { %>
-                    <dt>Comments</dt>
-                    <dd><%= comments %></dd>
-                <% } %>
-            </dl>
-        </script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/fetch.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/controller.js') }}"></script>
     </body>
 </html>
