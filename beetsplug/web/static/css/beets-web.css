@@ -47,6 +47,10 @@
 /* 
  * Playing section rules
  */
+.lyrics {
+	width: 30em;
+	font-family: Roboto, sans-serif;
+}
 .now-playing {
 	height: 100%;
 }
