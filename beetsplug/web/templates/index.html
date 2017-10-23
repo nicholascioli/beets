@@ -83,6 +83,14 @@
             </md-tabs>
 		</md-content>
 		
+		<div style="visibility: hidden">
+			<div class="md-dialog-container" id="lyrics">
+				<md-dialog layout-padding>
+					<pre style="width: auto; font-family: Roboto, Sans">[[audio.queue[audio.qIndex].lyrics]]</pre>
+				</md-dialog>
+			</div>
+		</div>
+
 		<md-toolbar md-whiteframe="9" style="position: fixed; bottom: 0; background-color: #FFF !important;">
 			<div class="track-progress">
 				<md-progress-linear ng-click="scroll($event)" value="[[audio.progress]]" md-mode="determinate"></md-progress-linear>
@@ -109,7 +117,11 @@
 					<md-button class="md-icon-button md-mini md-primary"><i class="material-icons">shuffle</i></md-button>
 				</div>
 				<div flex="33">
-
+					<div layout="row" layout-align="end center" ng-if="audio.queue.length > 0">
+						<md-button ng-click="showLyrics($event)" ng-disabled="audio.queue[audio.qIndex].lyrics.length == 0" class="md-icon-button md-mini md-primary">
+							<i class="material-icons">format_align_center</i>
+						</md-button>
+					</div>
 				</div>
 			</div>
 		</md-toolbar>

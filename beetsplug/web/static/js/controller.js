@@ -13,7 +13,7 @@ let app = angular
     }
 );
 
-app.controller("controller", ($scope) => {
+app.controller("controller", ($scope, $mdDialog) => {
     $scope.data = {
 		albums: [],
 		tracks: [],
@@ -152,6 +152,15 @@ app.controller("controller", ($scope) => {
 
 		return res.join(":");
 	}
+
+	$scope.showLyrics = (e) => {
+		$mdDialog.show({
+			contentElement: '#lyrics',
+			parent: angular.element(document.body),
+			targetEvent: e,
+			clickOutsideToClose: true
+		});
+	};
 
 	// Get the data
     fetchAlbums().then((data) => {
