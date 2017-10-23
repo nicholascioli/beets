@@ -65,7 +65,7 @@
 												</tr>
 										</thead>
 										<tbody md-body>
-											<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: query.order" ng-click="playAudio(track.id, $index);">
+											<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio(track.id, $index);">
 												<td md-cell>
 													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
 													<span>[[track.title]]</span>

@@ -53,6 +53,9 @@ app.controller("controller", ($scope, $mdDialog) => {
 		selected: []
 	};
 
+	// Overwritten by angular filter to include the list of tracks, ordered
+	$scope.ordered = [];
+
 	// Active window handler
 	$(window).on("blur focus", function(e) {
 		var prevType = $(this).data("prevType");
@@ -82,13 +85,12 @@ app.controller("controller", ($scope, $mdDialog) => {
 
 	// Play audio
 	$scope.playAudio = (track_id, index) => {
-		$scope.audio.queue = $scope.data.tracks;
+		$scope.audio.queue = $scope.ordered;
 		
 		if ($scope.audio.shuffle) {
 			$scope.audio.queue = shuffle($scope.audio.queue);
 			$scope.audio.qIndex = 0; // Shuffle assumes first play is the first element in the queue
 		} else {
-			$scope.audio.queue.sort(sort_by($scope.query.order, false));
 			$scope.audio.qIndex = index;
 		}
 
@@ -193,6 +195,14 @@ app.controller("controller", ($scope, $mdDialog) => {
 	});
 	
 	// Helper methods
+	function attemptLowerCase (obj) {
+		try {
+			return obj.toLowerCase();
+		} catch (e) {
+			return obj;
+		}
+	}
+
 	function clamp(value, min, max) {
 		return Math.min(Math.max(value, min), max);
 	}
@@ -204,17 +214,5 @@ app.controller("controller", ($scope, $mdDialog) => {
 		}
 
 		return array;
-	}
-
-	function sort_by(field, reverse, primer) {
-		var key = primer ?
-			function(x) {return primer(x[field])} :
-			function(x) {return x[field]};
-		
-		reverse = !reverse ? 1 : -1;
-		
-		return function (a, b) {
-			return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-		}
 	}
 });
