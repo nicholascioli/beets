@@ -21,7 +21,7 @@
 						<div class='md-padding' layout="row" layout-wrap>
 							<!-- TODO: Click handler for this -->
 							<md-card class="album" md-ink-ripple="#DDDDDD" ng-repeat="album in data.albums | orderBy: 'album'">
-								<img ng-src="/album/[[album.id]]/art" class="md-card-image noselect" alt="image caption">
+								<img ng-src="/album/[[album.id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-card-image noselect" alt="image caption">
 								<md-card-title>
 									<md-card-title-text>
 										<span class="md-headline noselect" md-colors="{color: 'grey-900'}">[[album.album]]</span>
@@ -42,7 +42,7 @@
 									</md-list-item>
 									<!-- TODO: Click handler for this -->
 									<md-list-item ng-repeat="album in data.albums | filter:{albumartist: artist} | orderBy: 'album'" md-ink-ripple="#DDDDDD" ng-click="window.alert('Clicked on ', [[track]])">
-										<img alt="[[album.album]]" ng-src="/album/[[album.id]]/art" class="md-list-item-image">
+										<img alt="[[album.album]]" ng-src="/album/[[album.id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
 										<p>[[album.album]]</p>
 									</md-list-item>
 									<md-divider ng-show="!$last"></md-divider>
@@ -67,7 +67,7 @@
 										<tbody md-body>
 											<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: query.order" ng-click="playAudio(track.id, $index);">
 												<td md-cell>
-													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" class="md-list-item-image">
+													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
 													<span>[[track.title]]</span>
 												</td>
 												<td md-cell><span>[[formatTime(track.length)]]</span></td>
@@ -99,7 +99,7 @@
 			<div class="md-toolbar-tools" layout="row" layout-align="center center" style="margin: 10px 0px; width: 100%;">
 				<div flex="33" style="height: 100%;">
 					<div class="now-playing" ng-if="audio.queue.length > 0" layout="row">
-						<img ng-src="/album/[[audio.queue[audio.qIndex].album_id]]/art" />
+						<img md-whiteframe="5" ng-src="/album/[[audio.queue[audio.qIndex].album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}">
 						<div layout="column">
 							<span class="md-title">[[audio.queue[audio.qIndex].title]]</span>
 							<span class="md-subhead">[[audio.queue[audio.qIndex].artist]] - [[audio.queue[audio.qIndex].album]]</span>

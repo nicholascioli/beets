@@ -10,7 +10,21 @@ let app = angular
         });
 
         $interpolateProvider.startSymbol('[[').endSymbol(']]');
-    }
+	})
+	.directive('fallback', function() {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+				if (attrs.ngSrc.length == 0) {
+					element.attr('src', attrs.fallback);
+				}
+
+				element.bind('error', function() {
+					element.attr('src', attrs.fallback);
+				});
+			}
+		};
+	}
 );
 
 app.controller("controller", ($scope, $mdDialog) => {
