@@ -164,7 +164,7 @@ app.controller("controller", ($scope, $mdDialog) => {
 			res.push(min);
 		}
 
-		res.push(("0" + min).slice(-2));
+		res.push(("0" + sec).slice(-2));
 
 		return res.join(":");
 	}
