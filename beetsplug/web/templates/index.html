@@ -80,7 +80,7 @@
 							</md-card>
 						</md-content>
 					</md-tab>
-            </md-tabs>
+			</md-tabs>
 		</md-content>
 		
 		<div style="visibility: hidden">
@@ -118,6 +118,15 @@
 				</div>
 				<div flex="33">
 					<div layout="row" layout-align="end center" ng-if="audio.queue.length > 0">
+						<div layout="row" layout-align="end center" ng-mouseover="showVolume(true)" ng-mouseleave="showVolume(false)">
+							<button ng-show="showVolumeSlider" class="md-icon-button md-mini md-primary md-button" type="button">
+								<i class="material-icons">volume_down</i>
+							</button>
+							<md-slider ng-if="showVolumeSlider" aria-label="volume slider" ng-model="audio.player.volume" step="0.05" min="0" max="1" type="float"></md-slider>
+							<button class="md-icon-button md-mini md-primary md-button" type="button">
+								<i class="md-primary material-icons">volume_up</i>
+							</button>
+						</div>
 						<md-button ng-click="showLyrics($event)" ng-disabled="audio.queue[audio.qIndex].lyrics.length == 0" class="md-icon-button md-mini md-primary">
 							<i class="material-icons">format_align_center</i>
 						</md-button>
@@ -126,19 +135,19 @@
 			</div>
 		</md-toolbar>
 
-        <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
 
-        <script type="text/javascript" src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-filter.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-animate.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/angular-aria.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-filter.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-animate.min.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-aria.min.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-messages.min.js') }}"></script>
 
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-material.min.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/md-data-table.min.js') }}"></script>
 
-        <script type="text/javascript" src="{{ url_for('static', filename='js/fetch.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('static', filename='js/controller.js') }}"></script>
-    </body>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/fetch.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/controller.js') }}"></script>
+	</body>
 </html>

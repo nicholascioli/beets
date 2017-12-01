@@ -1,5 +1,5 @@
 let app = angular
-    .module("beets-web", ['ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
+    .module("beets-web", ['ngAnimate', 'ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
     .config(($interpolateProvider, $mdThemingProvider) => {
         $mdThemingProvider.theme('default')
             .primaryPalette('red', {
@@ -55,6 +55,9 @@ app.controller("controller", ($scope, $mdDialog) => {
 
 	// Overwritten by angular filter to include the list of tracks, ordered
 	$scope.ordered = [];
+
+	// Show volume controls on hover
+	$scope.showVolumeSlider = false;
 
 	// Active window handler
 	$(window).on("blur focus", function(e) {
@@ -176,6 +179,10 @@ app.controller("controller", ($scope, $mdDialog) => {
 			targetEvent: e,
 			clickOutsideToClose: true
 		});
+	};
+
+	$scope.showVolume = (show) => {
+		$scope.showVolumeSlider = show;
 	};
 
 	// Get the data
