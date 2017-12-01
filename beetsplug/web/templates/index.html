@@ -107,14 +107,14 @@
 					</div>
 				</div>
 				<div style="margin: 0 auto;">
-					<md-button class="md-icon-button md-mini md-primary"><i class="material-icons">loop</i></md-button>
+					<md-button class="md-icon-button md-mini md-primary" ng-click="audio.repeat = !audio.repeat" ng-class="audio.repeat ? '' : 'disabled'"><i class="material-icons">loop</i></md-button>
 					<md-button class="md-fab md-mini md-primary" ng-click="skip(-1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == 0"><i class="material-icons">fast_rewind</i></md-button>
 					<md-button class="md-fab md-primary" ng-click="playPause()" ng-disabled="audio.queue.length == 0">
 						<i class="material-icons" ng-show="audio.isPlaying">pause</i>
 						<i class="material-icons" ng-show="!audio.isPlaying">play_arrow</i>
 					</md-button>
 					<md-button class="md-fab md-mini md-primary" ng-click="skip(1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == audio.queue.length - 1"><i class="material-icons">fast_forward</i></md-button>
-					<md-button class="md-icon-button md-mini md-primary"><i class="material-icons">shuffle</i></md-button>
+					<md-button class="md-icon-button md-mini md-primary" ng-click="audio.shuffle = !audio.shuffle;" ng-class="audio.shuffle ? '' : 'disabled'"><i class="material-icons">shuffle</i></md-button>
 				</div>
 				<div flex="33">
 					<div layout="row" layout-align="end center" ng-if="audio.queue.length > 0">

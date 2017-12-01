@@ -62,6 +62,9 @@
 .now-playing span {
 	color: black;
 }
+.disabled {
+	color: rgb(187, 187, 187) !important;
+}
 
 /* 
  * Angular Material rules for precise styling
