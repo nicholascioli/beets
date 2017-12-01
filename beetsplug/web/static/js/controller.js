@@ -88,16 +88,18 @@ app.controller("controller", ($scope, $mdDialog) => {
 
 	// Play audio
 	$scope.playAudio = (track_id, index) => {
-		$scope.audio.queue = $scope.ordered;
+		$scope.audio.queue = $scope.ordered.slice(0);
 		
 		if ($scope.audio.shuffle) {
+			let first = $scope.audio.queue.splice(index, 1)[0];
 			$scope.audio.queue = shuffle($scope.audio.queue);
+			$scope.audio.queue.unshift(first);
 			$scope.audio.qIndex = 0; // Shuffle assumes first play is the first element in the queue
 		} else {
 			$scope.audio.qIndex = index;
 		}
 
-		play_file(index);
+		play_file($scope.audio.qIndex);
 	};
 
 	$scope.playQueueItem = (qIndex) => {
