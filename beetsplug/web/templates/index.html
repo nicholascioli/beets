@@ -100,7 +100,7 @@
 				<div flex="33" style="height: 100%;">
 					<div class="now-playing" ng-if="audio.queue.length > 0" layout="row">
 						<img md-whiteframe="5" ng-src="/album/[[audio.queue[audio.qIndex].album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}">
-						<div layout="column">
+						<div layout="column" style="width: 100%;">
 							<span class="md-title">[[audio.queue[audio.qIndex].title]]</span>
 							<span class="md-subhead">[[audio.queue[audio.qIndex].artist]] - [[audio.queue[audio.qIndex].album]]</span>
 						</div>

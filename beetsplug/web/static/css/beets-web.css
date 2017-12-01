@@ -80,6 +80,12 @@
 	margin: 0.5em 0.75em 0.5em 0;
 }
 
+.md-title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .md-subhead {
     font-size: 0.8em;
     padding-top: 0 !important;
