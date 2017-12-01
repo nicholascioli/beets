@@ -1,5 +1,5 @@
 let app = angular
-    .module("beets-web", ['ngAnimate', 'ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
+    .module("beets-web", ['dndLists', 'ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
     .config(($interpolateProvider, $mdThemingProvider) => {
         $mdThemingProvider.theme('default')
             .primaryPalette('red', {
@@ -100,6 +100,14 @@ app.controller("controller", ($scope, $mdDialog) => {
 		play_file(index);
 	};
 
+	$scope.playQueueItem = (qIndex) => {
+		if (qIndex < 0 || qIndex > $scope.audio.queue.length - 1)
+			return;
+		
+		$scope.audio.qIndex = qIndex;
+		play_file(qIndex);
+	}
+
 	let play_file = (qIndex) => {
 		let track_id = $scope.audio.queue[qIndex].id;
 		let album_id = $scope.audio.queue[qIndex].album_id;
@@ -120,6 +128,20 @@ app.controller("controller", ($scope, $mdDialog) => {
 
 		$scope.audio.isPlaying = true;
 	};
+
+	$scope.startUpdateIndex = (start) => {
+		$scope.moveBegin = start;
+	}
+
+	$scope.stopUpdateIndex = (end) => {
+		console.log("~~: " + $scope.moveBegin + ":" + $scope.audio.qIndex + ":" + end);
+		if ($scope.moveBegin < $scope.audio.qIndex && end > $scope.audio.qIndex)
+			$scope.audio.qIndex -= 1;
+		if ($scope.moveBegin > $scope.audio.qIndex && end < $scope.audio.qIndex)
+			$scope.audio.qIndex += 1;
+		if ($scope.moveBegin === $scope.audio.qIndex)
+			$scope.audio.qIndex = end - 1;
+	}
 
 	// Media Controls
 	// FIXME: Gets weird when rewinding

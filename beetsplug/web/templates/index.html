@@ -1,22 +1,22 @@
 <!DOCTYPE html5>
 <html lang="en">
-    <head>
+	<head>
 		<title>Beets Web</title>
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}" />
 
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css') }}"  media="screen,projection"/>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css') }}"  media="screen,projection"/>
 		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/angular-material.min.css') }}"  media="screen,projection"/>
 		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/md-data-table.min.css') }}" media="screen,projection"/>
-        
-        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/beets-web.css') }}"  media="screen,projection"/>
+
+		<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/beets-web.css') }}"  media="screen,projection"/>
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head>
-    <body ng-app="beets-web" ng-controller="controller" ng-cloak="">
-        <md-content class="md-padding" style="margin-bottom: 5em !important;">
-            <md-tabs md-dynamic-height md-border-bottom md-swipe-content>
-                <md-tab label="Album" id="albums">
+	</head>
+	<body ng-app="beets-web" ng-controller="controller" ng-cloak="">
+		<md-content class="md-padding" style="margin-bottom: 5em !important;">
+			<md-tabs md-dynamic-height md-border-bottom md-swipe-content>
+				<md-tab label="Album" id="albums">
 					<md-content>
 						<div class='md-padding' layout="row" layout-wrap>
 							<!-- TODO: Click handler for this -->
@@ -52,34 +52,53 @@
 					</md-content>
 				</md-tab>
 				<md-tab label="Songs">
-						<md-content>
-							<md-card>
-								<md-table-container>
-									<table md-table>
-										<thead md-head md-order="query.order">
-												<tr md-row>
-													<th md-column md-order-by="title"><span>Title</span></th>
-													<th md-column md-numeric md-order-by="length"><i class="material-icons">access_time</i></th>
-													<th md-column md-order-by="artist"><span>Artist</span></th>
-													<th md-column md-order-by="album"><span>Album</span></th>
-												</tr>
-										</thead>
-										<tbody md-body>
-											<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio(track.id, $index);">
-												<td md-cell>
-													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
-													<span>[[track.title]]</span>
-												</td>
-												<td md-cell><span>[[formatTime(track.length)]]</span></td>
-												<td md-cell><span>[[track.artist]]</span></td>
-												<td md-cell><span>[[track.album]]</span></td>
+					<md-content>
+						<md-card>
+							<md-table-container>
+								<table md-table>
+									<thead md-head md-order="query.order">
+											<tr md-row>
+												<th md-column md-order-by="title"><span>Title</span></th>
+												<th md-column md-numeric md-order-by="length"><i class="material-icons">access_time</i></th>
+												<th md-column md-order-by="artist"><span>Artist</span></th>
+												<th md-column md-order-by="album"><span>Album</span></th>
 											</tr>
-										</tbody>
-									</table>
-								</md-table-container>
-							</md-card>
-						</md-content>
-					</md-tab>
+									</thead>
+									<tbody md-body>
+										<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio(track.id, $index);">
+											<td md-cell>
+												<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
+												<span>[[track.title]]</span>
+											</td>
+											<td md-cell><span>[[formatTime(track.length)]]</span></td>
+											<td md-cell><span>[[track.artist]]</span></td>
+											<td md-cell><span>[[track.album]]</span></td>
+										</tr>
+									</tbody>
+								</table>
+							</md-table-container>
+						</md-card>
+					</md-content>
+				</md-tab>
+				<md-tab label="Queue">
+					<md-card>
+						<md-table-container>
+							<table md-table>
+								<tbody md-body dnd-list="audio.queue" dnd-inserted="stopUpdateIndex(index)">
+									<tr ng-repeat="track in audio.queue" dnd-draggable="track" dnd-moved="audio.queue.splice($index, 1)" dnd-dragstart="startUpdateIndex($index)" dnd-effect-allowed="move" md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-click="playQueueItem($index);">
+										<td md-cell>
+											<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
+											<span>[[track.title]]</span>
+										</td>
+										<td md-cell><span>[[formatTime(track.length)]]</span></td>
+										<td md-cell><span>[[track.artist]]</span></td>
+										<td md-cell><span>[[track.album]]</span></td>
+									</tr>
+								</tbody>
+							</table>
+						</md-table-container>
+					</md-card>
+				</md-tab>
 			</md-tabs>
 		</md-content>
 		
@@ -143,6 +162,8 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-animate.min.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-aria.min.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-messages.min.js') }}"></script>
+
+		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-drag-and-drop-lists.min.js') }}"></script>
 
 		<script type="text/javascript" src="{{ url_for('static', filename='js/angular-material.min.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/md-data-table.min.js') }}"></script>
