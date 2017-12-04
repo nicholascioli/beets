@@ -72,7 +72,19 @@
 													<span>[[track.title]]</span>
 												</div>
 												<div>
-													<span><i class="material-icons">more_vert</i></span>
+													<md-menu>
+														<span aria-label="Open menu for track [[track.title]]" class="md-icon-button" ng-click="openMenu($mdOpenMenu, $event)">
+															<i class="material-icons">more_vert</i>
+														</span>
+														<md-menu-content width="4">
+															<md-menu-item>
+																<a class="md-icon-button" href="/item/[[track.id]]/file" target="_blank" layout="row" layout-align="start center">
+																	<span style="margin-right: 0.25em;"><i class="material-icons">file_download</i></span>
+																	<span>Download</span>
+																</a>
+															</md-menu-item>
+														</md-menu-content>
+													</md-menu>
 												</div>
 											</td>
 											<td md-cell><span>[[formatTime(track.length)]]</span></td>

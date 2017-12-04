@@ -178,6 +178,11 @@ app.controller("controller", ($scope, $mdDialog) => {
 	}
 
 	// Helper methods
+	$scope.openMenu = ($mdOpenMenu, event) => {
+		$mdOpenMenu(event);
+		event.stopPropagation();
+	}
+
 	$scope.formatTime = (long_time) => {
 		let hor = Math.floor(long_time / 60 / 60);
 		let min = Math.floor(long_time / 60);
@@ -210,9 +215,9 @@ app.controller("controller", ($scope, $mdDialog) => {
 	};
 
 	// Get the data
-    fetchAlbums().then((data) => {
-        $scope.data.albums = data.albums;
-        $scope.$apply();
+	fetchAlbums().then((data) => {
+		$scope.data.albums = data.albums;
+		$scope.$apply();
 	});
 	
 	fetchMedia().then((data) => {
