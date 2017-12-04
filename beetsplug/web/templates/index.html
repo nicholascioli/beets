@@ -59,16 +59,21 @@
 									<thead md-head md-order="query.order">
 											<tr md-row>
 												<th md-column md-order-by="title"><span>Title</span></th>
-												<th md-column md-numeric md-order-by="length"><i class="material-icons">access_time</i></th>
+												<th md-column md-numeric md-order-by="length" style="width: 0;"><i class="material-icons">access_time</i></th>
 												<th md-column md-order-by="artist"><span>Artist</span></th>
 												<th md-column md-order-by="album"><span>Album</span></th>
 											</tr>
 									</thead>
 									<tbody md-body>
 										<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio(track.id, $index);">
-											<td md-cell>
-												<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
-												<span>[[track.title]]</span>
+											<td md-cell layout="row" layout-align="space-between center">
+												<div layout="row" layout-align="center center">
+													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
+													<span>[[track.title]]</span>
+												</div>
+												<div>
+													<span><i class="material-icons">more_vert</i></span>
+												</div>
 											</td>
 											<td md-cell><span>[[formatTime(track.length)]]</span></td>
 											<td md-cell><span>[[track.artist]]</span></td>
