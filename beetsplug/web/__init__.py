@@ -282,7 +282,7 @@ def all_albums():
 @app.route('/album/<int:album_id>/file')
 def album_file(album_id):
     def to_ascii(s):
-        return s.decode('unicode_escape').encode('ascii', 'ignore')
+        return s.encode('ascii', 'ignore').decode('utf-8')
 
     album = g.lib.get_album(album_id)
 
