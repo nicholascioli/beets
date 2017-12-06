@@ -281,6 +281,9 @@ def all_albums():
 
 @app.route('/album/<int:album_id>/file')
 def album_file(album_id):
+    def to_ascii(s):
+        return s.decode('unicode_escape').encode('ascii', 'ignore')
+
     album = g.lib.get_album(album_id)
 
     if album != None:
@@ -291,13 +294,13 @@ def album_file(album_id):
             item_track = g.lib.get_item(item.id)
             if os.name == 'nt':
                 p = util.syspath(item_track.path)
-                z.write(p, album.album + '/' + os.path.basename(p))
             else:
                 p = util.py3_path(item_track.path)
-                z.write(p, album.album + '/' + os.path.basename(p))
+
+            z.write(p, to_ascii(album.album) + '/' + os.path.basename(to_ascii(p)))
         
         response = flask.Response(z, mimetype='application/zip')
-        response.headers['Content-Disposition'] = 'attachment; filename=\"{}\"'.format(file_name)
+        response.headers['Content-Disposition'] = 'attachment; filename=\"{}\"'.format(to_ascii(file_name))
         return response
     else:
         return flask.abort(404)
