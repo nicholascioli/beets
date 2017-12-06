@@ -27,6 +27,8 @@ import os
 import json
 import base64
 
+import zipstream
+
 
 # Utilities.
 
@@ -275,6 +277,30 @@ def get_album(id):
 @resource_list('albums')
 def all_albums():
     return g.lib.albums()
+
+
+@app.route('/album/<int:album_id>/file')
+def album_file(album_id):
+    album = g.lib.get_album(album_id)
+
+    if album != None:
+        file_name = album.albumartist + ' - ' + album.album + '.zip'
+        z = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
+
+        for item in album.items():
+            item_track = g.lib.get_item(item.id)
+            if os.name == 'nt':
+                p = util.syspath(item_track.path)
+                z.write(p, album.album + '/' + os.path.basename(p))
+            else:
+                p = util.py3_path(item_track.path)
+                z.write(p, album.album + '/' + os.path.basename(p))
+        
+        response = flask.Response(z, mimetype='application/zip')
+        response.headers['Content-Disposition'] = 'attachment; filename=\"{}\"'.format(file_name)
+        return response
+    else:
+        return flask.abort(404)
 
 
 @app.route('/album/query/<query:queries>')
