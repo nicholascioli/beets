@@ -65,7 +65,7 @@
 											</tr>
 									</thead>
 									<tbody md-body>
-										<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio(track.id, $index);">
+										<tr md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track===audio.current.data}" ng-repeat="track in data.tracks | orderBy: [query.order, 'title'] as ordered" ng-click="playAudio($index);">
 											<td md-cell layout="row" layout-align="space-between center">
 												<div layout="row" layout-align="center center">
 													<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
@@ -101,8 +101,8 @@
 					<md-card>
 						<md-table-container>
 							<table md-table>
-								<tbody md-body dnd-list="audio.queue" dnd-inserted="stopUpdateIndex(index)">
-									<tr ng-repeat="track in audio.queue" dnd-draggable="track" dnd-moved="audio.queue.splice($index, 1)" dnd-dragstart="startUpdateIndex($index)" dnd-effect-allowed="move" md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track.id==audio.playingTrackId}" ng-click="playQueueItem($index);">
+								<tbody md-body dnd-list="audio.queue.flatten()" dnd-inserted="moveItem(index, item)">
+									<tr ng-repeat="track in audio.queue.flatten()" dnd-draggable="track" dnd-dragstart="removeItem($index)" dnd-effect-allowed="move" md-ink-ripple="#DDDDDD" md-row class="track" ng-class="{'track-playing': track._isCurrent === true}" ng-click="playQueueItem($index);">
 										<td md-cell>
 											<img alt="[[track.album]]" ng-src="/album/[[track.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}" class="md-list-item-image">
 											<span>[[track.title]]</span>
@@ -122,7 +122,7 @@
 		<div style="visibility: hidden">
 			<div class="md-dialog-container" id="lyrics">
 				<md-dialog layout-padding>
-					<pre class="lyrics">[[audio.queue[audio.qIndex].lyrics]]</pre>
+					<pre class="lyrics">[[audio.current.data.lyrics]]</pre>
 				</md-dialog>
 			</div>
 		</div>
@@ -134,26 +134,26 @@
 
 			<div class="md-toolbar-tools" layout="row" layout-align="center center" style="margin: 10px 0px; width: 100%;">
 				<div flex="33" style="height: 100%;">
-					<div class="now-playing" ng-if="audio.queue.length > 0" layout="row">
-						<img md-whiteframe="5" ng-src="/album/[[audio.queue[audio.qIndex].album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}">
+					<div class="now-playing" ng-if="audio.queue._length > 0" layout="row">
+						<img md-whiteframe="5" ng-src="/album/[[audio.current.data.album_id]]/art" fallback="{{ url_for('static', filename='img/default_album.png') }}">
 						<div layout="column" style="width: 100%;">
-							<span class="md-title">[[audio.queue[audio.qIndex].title]]</span>
-							<span class="md-subhead">[[audio.queue[audio.qIndex].artist]] - [[audio.queue[audio.qIndex].album]]</span>
+							<span class="md-title">[[audio.current.data.title]]</span>
+							<span class="md-subhead">[[audio.current.data.artist]] - [[audio.current.data.album]]</span>
 						</div>
 					</div>
 				</div>
 				<div style="margin: 0 auto;">
 					<md-button class="md-icon-button md-mini md-primary" ng-click="audio.repeat = !audio.repeat" ng-class="audio.repeat ? '' : 'disabled'"><i class="material-icons">loop</i></md-button>
-					<md-button class="md-fab md-mini md-primary" ng-click="skip(-1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == 0"><i class="material-icons">fast_rewind</i></md-button>
-					<md-button class="md-fab md-primary" ng-click="playPause()" ng-disabled="audio.queue.length == 0">
+					<md-button class="md-fab md-mini md-primary" ng-click="skip(false)" ng-disabled="audio.queue._length == 0 || audio.current.prev == null"><i class="material-icons">fast_rewind</i></md-button>
+					<md-button class="md-fab md-primary" ng-click="playPause()" ng-disabled="audio.queue._length == 0">
 						<i class="material-icons" ng-show="audio.isPlaying">pause</i>
 						<i class="material-icons" ng-show="!audio.isPlaying">play_arrow</i>
 					</md-button>
-					<md-button class="md-fab md-mini md-primary" ng-click="skip(1)" ng-disabled="audio.queue.length == 0 || audio.qIndex == audio.queue.length - 1"><i class="material-icons">fast_forward</i></md-button>
+					<md-button class="md-fab md-mini md-primary" ng-click="skip(true)" ng-disabled="audio.queue._length == 0 || (audio.repeat && audio.current.next == null)"><i class="material-icons">fast_forward</i></md-button>
 					<md-button class="md-icon-button md-mini md-primary" ng-click="audio.shuffle = !audio.shuffle;" ng-class="audio.shuffle ? '' : 'disabled'"><i class="material-icons">shuffle</i></md-button>
 				</div>
 				<div flex="33">
-					<div layout="row" layout-align="end center" ng-if="audio.queue.length > 0">
+					<div layout="row" layout-align="end center" ng-if="audio.queue._length > 0">
 						<div layout="row" layout-align="end center" ng-mouseover="showVolume(true)" ng-mouseleave="showVolume(false)">
 							<button ng-show="showVolumeSlider" class="md-icon-button md-mini md-primary md-button" type="button">
 								<i class="material-icons">volume_down</i>
@@ -163,7 +163,7 @@
 								<i class="md-primary material-icons">volume_up</i>
 							</button>
 						</div>
-						<md-button ng-click="showLyrics($event)" ng-disabled="audio.queue[audio.qIndex].lyrics.length == 0" class="md-icon-button md-mini md-primary">
+						<md-button ng-click="showLyrics($event)" ng-disabled="audio.current.data.lyrics.length == 0" class="md-icon-button md-mini md-primary">
 							<i class="material-icons">format_align_center</i>
 						</md-button>
 					</div>
@@ -186,6 +186,7 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/md-data-table.min.js') }}"></script>
 
 		<script type="text/javascript" src="{{ url_for('static', filename='js/fetch.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/linked-list.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/controller.js') }}"></script>
 	</body>
 </html>

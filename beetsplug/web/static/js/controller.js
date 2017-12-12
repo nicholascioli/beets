@@ -1,15 +1,15 @@
 let app = angular
-    .module("beets-web", ['dndLists', 'ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
-    .config(($interpolateProvider, $mdThemingProvider) => {
-        $mdThemingProvider.theme('default')
-            .primaryPalette('red', {
-                'default': '400'
-            })
-            .accentPalette('green', {
-                'default': '200'
-        });
+	.module("beets-web", ['dndLists', 'ngMaterial', 'ngMessages', 'angular.filter', 'md.data.table'])
+	.config(($interpolateProvider, $mdThemingProvider) => {
+		$mdThemingProvider.theme('default')
+			.primaryPalette('red', {
+				'default': '400'
+			})
+			.accentPalette('green', {
+				'default': '200'
+		});
 
-        $interpolateProvider.startSymbol('[[').endSymbol(']]');
+		$interpolateProvider.startSymbol('[[').endSymbol(']]');
 	})
 	.directive('fallback', function() {
 		return {
@@ -28,12 +28,12 @@ let app = angular
 );
 
 app.controller("controller", ($scope, $mdDialog) => {
-    $scope.data = {
+	$scope.data = {
 		albums: [],
 		tracks: [],
 		artists: []
 	};
-	
+
 	$scope.audio = {
 		player: new Audio(),
 		progress: 0,
@@ -44,8 +44,8 @@ app.controller("controller", ($scope, $mdDialog) => {
 		// TODO: shuffle & repeat
 		shuffle: false,
 		repeat: false,
-		queue: [],
-		qIndex: 0
+		queue: new LinkedList(),
+		current: null
 	};
 
 	$scope.query = {
@@ -59,90 +59,96 @@ app.controller("controller", ($scope, $mdDialog) => {
 	// Show volume controls on hover
 	$scope.showVolumeSlider = false;
 
+	let window_handler = () => {
+		$scope.$apply(() => {
+			$scope.audio.progress = 100 * $scope.audio.player.currentTime / $scope.audio.player.duration;
+		});
+	};
+	$scope.audio.player.ontimeupdate = window_handler;
+
 	// Active window handler
 	$(window).on("blur focus", function(e) {
 		var prevType = $(this).data("prevType");
-	
+
 		if (prevType != e.type) {   //  reduce double fire issues
 			switch (e.type) {
 				case "blur": // Inactive
 					$scope.audio.player.ontimeupdate = null;
 					break;
 				case "focus": // Active
-					$scope.audio.player.ontimeupdate = () => {
-						$scope.$apply(() => {
-							$scope.audio.progress = 100 * $scope.audio.player.currentTime / $scope.audio.player.duration;
-						});
-					};
+					$scope.audio.player.ontimeupdate = window_handler;
 					break;
 			}
 		}
-	
+
 		$(this).data("prevType", e.type);
 	})
 
 	// Audio Callbacks
 	$scope.audio.player.onended = () => {
-		$scope.skip(1);
+		$scope.skip(true);
 	}
 
 	// Play audio
-	$scope.playAudio = (track_id, index) => {
-		$scope.audio.queue = $scope.ordered.slice(0);
+	$scope.playAudio = (index) => {
+		let list = $scope.ordered.slice(0);
+		$scope.audio.queue.clear();
+		$scope.audio.current = null;
 		
 		if ($scope.audio.shuffle) {
-			let first = $scope.audio.queue.splice(index, 1)[0];
-			$scope.audio.queue = shuffle($scope.audio.queue);
-			$scope.audio.queue.unshift(first);
-			$scope.audio.qIndex = 0; // Shuffle assumes first play is the first element in the queue
+			let first = list.splice(index, 1)[0];
+			$scope.audio.queue = shuffle(list);
+			$scope.audio.queue.prepend(first);
+			$scope.audio.current = $scope.audio.queue.head; // Shuffle assumes first play is the first element in the queue
 		} else {
-			$scope.audio.qIndex = index;
+			for (let item of list) {
+				$scope.audio.queue.append(item);
+			}
+
+			$scope.audio.current = $scope.audio.queue.get(index);
 		}
 
-		play_file($scope.audio.qIndex);
+		play_file($scope.audio.current);
 	};
 
 	$scope.playQueueItem = (qIndex) => {
-		if (qIndex < 0 || qIndex > $scope.audio.queue.length - 1)
+		if (qIndex < 0 || qIndex > $scope.audio.queue._length - 1)
 			return;
 		
-		$scope.audio.qIndex = qIndex;
-		play_file(qIndex);
+		let item = $scope.audio.queue.get(qIndex);
+		play_file(item);
 	}
 
-	let play_file = (qIndex) => {
-		let track_id = $scope.audio.queue[qIndex].id;
-		let album_id = $scope.audio.queue[qIndex].album_id;
+	let play_file = (track_container) => {
+		if ($scope.audio.current) $scope.audio.current.data._isCurrent = false;
 
+		$scope.audio.current = track_container;
+		track_container.data._isCurrent = true;
+
+		let track = track_container.data;
 		$scope.audio.player.pause();
-		$scope.audio.player.setAttribute('src', "/item/" + track_id + "/file");
+		$scope.audio.player.setAttribute('src', "/item/" + track.id + "/file");
 
 		// TODO
 		// if (!$scope.audio.player.canPlayType()) {
-		// 	alert("Unsupported file type :(");
-		// 	return;
+		//  alert("Unsupported file type :(");
+		//  return;
 		// }
 
 		$scope.audio.player.load();
 		$scope.audio.player.play();
-		$scope.audio.playingTrackId = track_id;
-		$scope.audio.playingAlbumId = album_id;
 
 		$scope.audio.isPlaying = true;
 	};
 
-	$scope.startUpdateIndex = (start) => {
-		$scope.moveBegin = start;
+	$scope.removeItem = (index) => {
+		$scope.audio.queue.remove(index);
 	}
 
-	$scope.stopUpdateIndex = (end) => {
-		console.log("~~: " + $scope.moveBegin + ":" + $scope.audio.qIndex + ":" + end);
-		if ($scope.moveBegin < $scope.audio.qIndex && end > $scope.audio.qIndex)
-			$scope.audio.qIndex -= 1;
-		if ($scope.moveBegin > $scope.audio.qIndex && end < $scope.audio.qIndex)
-			$scope.audio.qIndex += 1;
-		if ($scope.moveBegin === $scope.audio.qIndex)
-			$scope.audio.qIndex = end - 1;
+	$scope.moveItem = (index, item) => {
+		let ins = $scope.audio.queue.insert(index, item);
+
+		if (ins.data._isCurrent) $scope.audio.current = ins;
 	}
 
 	// Media Controls
@@ -162,19 +168,24 @@ app.controller("controller", ($scope, $mdDialog) => {
 		$scope.audio.isPlaying = !$scope.audio.isPlaying;
 	};
 
-	$scope.skip = (delta) => {
+	$scope.skip = (forward) => {
+		let node = $scope.audio.current;
+
 		// Rewind to beginning of track if past first 2% of the song
-		if (delta == -1 && $scope.audio.progress > 2) {
-			// nothing
+		if (!forward) {
+			if ($scope.audio.progress > 2) 
+				node = node;
+			else
+				node = node.prev;
 		} else {
-			$scope.audio.qIndex += delta;
+			node = node.next;
 		}
 
 		// Wrap queue around if repeat is true
-		if ($scope.audio.qIndex >= $scope.audio.queue.length && $scope.audio.repeat)
-			$scope.audio.qIndex %= $scope.audio.queue.length;
+		if (node === null && $scope.audio.repeat)
+			node = $scope.audio.queue.head;
 
-		play_file($scope.audio.qIndex);
+		play_file(node);
 	}
 
 	// Helper methods
@@ -219,7 +230,7 @@ app.controller("controller", ($scope, $mdDialog) => {
 		$scope.data.albums = data.albums;
 		$scope.$apply();
 	});
-	
+
 	fetchMedia().then((data) => {
 		$scope.data.tracks = data.items;
 		$scope.$apply();
@@ -229,7 +240,7 @@ app.controller("controller", ($scope, $mdDialog) => {
 		$scope.data.artists = data.artist_names;
 		$scope.$apply();
 	});
-	
+
 	// Helper methods
 	function attemptLowerCase (obj) {
 		try {
@@ -244,11 +255,12 @@ app.controller("controller", ($scope, $mdDialog) => {
 	}
 
 	function shuffle(array) {
+		let result = new LinkedList();
 		for (var i = array.length - 1; i > 0; i--) {
 			var j = Math.floor(Math.random() * (i + 1));
-			[array[i], array[j]] = [array[j], array[i]];
+			result.prepend(array.splice(j, 1)[0]);
 		}
 
-		return array;
+		return result;
 	}
 });
