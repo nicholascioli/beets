@@ -156,6 +156,14 @@ def _get_unique_table_field_values(model, field, sort_field):
     return [row[0] for row in rows]
 
 
+def pathify(path):
+    # On Windows under Python 2, Flask wants a Unicode path. On Python 3, it
+    # *always* wants a Unicode path.
+    if os.name == 'nt':
+        return util.syspath(path)
+    else:
+        return util.py3_path(path)
+
 class IdListConverter(BaseConverter):
     """Converts comma separated lists of ids in urls to integer lists.
     """
@@ -219,13 +227,7 @@ def all_items():
 @app.route('/item/<int:item_id>/file')
 def item_file(item_id):
     item = g.lib.get_item(item_id)
-
-    # On Windows under Python 2, Flask wants a Unicode path. On Python 3, it
-    # *always* wants a Unicode path.
-    if os.name == 'nt':
-        item_path = util.syspath(item.path)
-    else:
-        item_path = util.py3_path(item.path)
+    item_path = pathify(item.path)
 
     response = flask.send_file(
         item_path,
@@ -316,12 +318,7 @@ def album_query(queries):
 def album_art(album_id):
     album = g.lib.get_album(album_id)
     if album.artpath:
-        # On Windows under Python 2, Flask wants a Unicode path. On Python 3, it
-        # *always* wants a Unicode path.
-        if os.name == 'nt':
-            item_path = util.syspath(album.artpath)
-        else:
-            item_path = util.py3_path(album.artpath)
+        item_path = pathify(album.artpath)
 
         return flask.send_file(item_path)
     else:
@@ -380,6 +377,9 @@ class WebPlugin(BeetsPlugin):
             'cors': '',
             'reverse_proxy': False,
             'include_paths': False,
+            'enable_ssl': False,
+            'ssl_cert': '',
+            'ssl_key': ''
         })
 
     def commands(self):
@@ -414,11 +414,25 @@ class WebPlugin(BeetsPlugin):
             # Allow serving behind a reverse proxy
             if self.config['reverse_proxy']:
                 app.wsgi_app = ReverseProxied(app.wsgi_app)
+            
+            # Allow SSL support if specified
+            if self.config['enable_ssl']:
+                from flask_sslify import SSLify
+                sslify = SSLify(app)
+                ssl_cert = pathify(self.config['ssl_cert'].get(str))
+                ssl_key = pathify(self.config['ssl_key'].get(str))
 
-            # Start the web application.
-            app.run(host=self.config['host'].as_str(),
+                # Start the web application with SSL certs.
+                app.run(host=self.config['host'].as_str(),
+                    port=self.config['port'].get(int),
+                    debug=opts.debug, threaded=True,
+                    ssl_context=(ssl_cert, ssl_key))
+            else:
+                # Start the web application.
+                app.run(host=self.config['host'].as_str(),
                     port=self.config['port'].get(int),
                     debug=opts.debug, threaded=True)
+
         cmd.func = func
         return [cmd]
 
