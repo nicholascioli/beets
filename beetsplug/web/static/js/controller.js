@@ -226,21 +226,21 @@ app.controller("controller", ($scope, $mdDialog) => {
 	};
 
 	// Get the data
-	fetch("album").then((data) => {
+	fetch("/album/").then((data) => {
 		return data.json();
 	}).then((json) => {
 		$scope.data.albums = json.albums;
 		$scope.$apply();
 	});
 
-	fetch("item").then((data) => {
+	fetch("/item/").then((data) => {
 		return data.json();
 	}).then((json) => {
 		$scope.data.tracks = json.items;
 		$scope.$apply();
 	});
 
-	fetch("artist").then((data) => {
+	fetch("/artist/").then((data) => {
 		return data.json();
 	}).then((json) => {
 		$scope.data.artists = json.artist_names;
