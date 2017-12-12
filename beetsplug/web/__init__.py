@@ -376,8 +376,7 @@ class WebPlugin(BeetsPlugin):
             'port': 8337,
             'cors': '',
             'reverse_proxy': False,
-            'include_paths': False,
-            'enable_ssl': False
+            'include_paths': False
         })
 
     def commands(self):
@@ -412,11 +411,6 @@ class WebPlugin(BeetsPlugin):
             # Allow serving behind a reverse proxy
             if self.config['reverse_proxy']:
                 app.wsgi_app = ReverseProxied(app.wsgi_app)
-            
-            # Allow SSL support if specified
-            if self.config['enable_ssl']:
-                from flask_sslify import SSLify
-                sslify = SSLify(app)
             
             # Start the web application.
             app.run(host=self.config['host'].as_str(),
