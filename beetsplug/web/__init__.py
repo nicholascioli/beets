@@ -377,9 +377,7 @@ class WebPlugin(BeetsPlugin):
             'cors': '',
             'reverse_proxy': False,
             'include_paths': False,
-            'enable_ssl': False,
-            'ssl_cert': '',
-            'ssl_key': ''
+            'enable_ssl': False
         })
 
     def commands(self):
@@ -419,19 +417,11 @@ class WebPlugin(BeetsPlugin):
             if self.config['enable_ssl']:
                 from flask_sslify import SSLify
                 sslify = SSLify(app)
-                ssl_cert = pathify(self.config['ssl_cert'].get(str))
-                ssl_key = pathify(self.config['ssl_key'].get(str))
-
-                # Start the web application with SSL certs.
-                app.run(host=self.config['host'].as_str(),
-                    port=self.config['port'].get(int),
-                    debug=opts.debug, threaded=True,
-                    ssl_context=(ssl_cert, ssl_key))
-            else:
-                # Start the web application.
-                app.run(host=self.config['host'].as_str(),
-                    port=self.config['port'].get(int),
-                    debug=opts.debug, threaded=True)
+            
+            # Start the web application.
+            app.run(host=self.config['host'].as_str(),
+                port=self.config['port'].get(int),
+                debug=opts.debug, threaded=True)
 
         cmd.func = func
         return [cmd]
