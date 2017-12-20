@@ -91,6 +91,8 @@ app.controller("controller", ($scope, $mdDialog) => {
 
 	// Play audio
 	$scope.playAudio = (index) => {
+		if ($scope.audio.current) $scope.audio.current.data._isCurrent = false;
+
 		let list = $scope.ordered.slice(0);
 		$scope.audio.queue.clear();
 		$scope.audio.current = null;
@@ -99,6 +101,7 @@ app.controller("controller", ($scope, $mdDialog) => {
 			let first = list.splice(index, 1)[0];
 			$scope.audio.queue = shuffle(list);
 			$scope.audio.queue.prepend(first);
+			
 			$scope.audio.current = $scope.audio.queue.head; // Shuffle assumes first play is the first element in the queue
 		} else {
 			for (let item of list) {
